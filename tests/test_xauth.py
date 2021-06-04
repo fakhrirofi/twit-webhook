@@ -11,4 +11,4 @@ def test_register_xauth():
         username = os.environ['TWITTER_USERNAME']
         password = os.environ['TWITTER_PASSWORD']
         token = get_xauth_access_token(consumer_key, consumer_secret, username, password)
-        verify_credentials(consumer_key, consumer_secret, token['access_key'], token['access_secret'])
+        verify_credentials(consumer_key, consumer_secret, token['access_token'], token['access_token_secret'])
