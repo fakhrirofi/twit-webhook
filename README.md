@@ -1,7 +1,7 @@
 # twitter-webhook
 Simple Twitter webhook to manage multiple Twitter developer accounts using
 [twitivity](https://github.com/twitivity/twitivity). <br>
-Supported Python version: **Python 3.6**, **3.7** , **3.8**, and **3.9**.
+Supported Versions: **Python 3.7** , **Python 3.8**, and **Python 3.9**.
 
 ## Installation
 
