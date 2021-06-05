@@ -13,7 +13,7 @@ def callable(data):
 webhook = {
     'testing': {
         'consumer_secret': os.environ['CONSUMER_SECRET'],
-        'subcriptions': [
+        'subscriptions': [
             {
             'user_id': '123456789',
             'callable': callable

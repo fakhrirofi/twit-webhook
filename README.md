@@ -1,13 +1,13 @@
-# twitter-webhook
+# twit-webhook
 Simple Twitter webhook to manage multiple Twitter developer accounts using
 [twitivity](https://github.com/twitivity/twitivity). <br>
-Supported Versions: **Python 3.7** , **Python 3.8**, and **Python 3.9**.
+Supported Versions: **Python 3.7**, **Python 3.8**, and **Python 3.9**.
 
 ## Installation
 
 ```bash
-git clone https://github.com/fakhrirofi/twitter-webhook.git
-cd twitter-webhook
+git clone https://github.com/fakhrirofi/twit-webhook.git
+cd twit-webhook
 python3 -m venv venv
 . venv/bin/activate # linux
 # venv\Scripts\activate # windows
@@ -16,7 +16,7 @@ pip3 install -r requirements.txt
 
 ## Set up the environment
 
-Rename `.env.example` to `.env` and edit the contents.
+Rename **.env.example** to **.env** and edit the contents.
 - You can get the **ENV_NAME** by creating Account Activity API (AAPI) dev
 environment at https://developer.twitter.com/en/account/environments.
 - There are two options to port forwarding using ngrok:
@@ -33,6 +33,11 @@ environment at https://developer.twitter.com/en/account/environments.
         ```
     Copy the url (https scheme) to the **URL** at .env file. Don't close the
     ngrok process.
+    
+    You can run examples/configure.py as well. Copy that to the root folder,
+    then run by using syntax: `python3 configure.py`. It will automatically
+    [Register webhook](#register-webhook-to-twitter) and
+    [Create subscription](#add-subscription-to-the-webhook).
 
 ## Play time!
 
@@ -77,7 +82,7 @@ terminal screen. Yeay!
 
 ### Why [register](#register-webhook-to-twitter) and [subscribe](#add-subscription-to-the-webhook) are different?
 
-If you look at [subcriptions dashboard](https://developer.twitter.com/en/account/subscriptions),
+If you look at [subscriptions dashboard](https://developer.twitter.com/en/account/subscriptions),
 you will see this graph.
 
 ![](assets/subscription-graph.jpg)
@@ -90,23 +95,15 @@ One AAPI dev environment can only be used to register one webhook. The owner
 we can register a new webhook.
 
 One (free) AAPI dev environment can be used to subscribe up to 15 developer
-accounts activity. To do that, look at [Multiple subcriptions](#multiple-subcriptions).
+accounts. To do that, look at [Multiple subscriptions](#multiple-subscriptions).
 
 ## Automation example
 
-Copy or move automation.py from example to the root folder.
-```bash
-cp example/automation.py automation.py # copy
-# mv example/automation.py automation.py # move
-```
+Copy examples/automation.py to the root folder, then run by using syntax:
+`python3 automation.py`.
 
-Run automation.py by using syntax:
-```bash
-python3 automation.py
-```
-
-If you want to forward port using ngrok for a long time, you should create a
-ngrok accoun. Without Ngrok Auth Token, the ngrok process is limited by time.
+If you want to forward port using Ngrok for a long time, you should create a
+ngrok account. Without Ngrok Auth Token, the ngrok session time is limited.
 Copy the Ngrok Auth Token from https://dashboard.ngrok.com/get-started/your-authtoken,
 then set the pyngrok auth token by adding this code.
 ```python
@@ -150,16 +147,18 @@ Consumer secret: IQWdVyqFxghAtURHGeGiWAsmCAGmdW3WmbEx6Hck
 Consumer key:    3rJOl1ODzm9yZy63FACdg
 Consumer secret: 5jPoQ5kQvMJFDYRNE8bQ4rHuds4xJqhvgNJM4awaE8
 ```
-**Account that using (Un)Official Consumer Key can't be used to subscribe account activity**,
-because we need **ENV_NAME** to register webhook and subscribe account activity.
+**Account that using (Un)Official Consumer Key can't be used to create subscription**,
+because we need **ENV_NAME** to register webhook and create subscription.
 
 ## Tests
 
-Rename `test.env.example` to `test.env` and edit the contents.<br>
+Rename **test.env.example** to **test.env** and edit the contents.<br>
 Run the test by using syntax:
 ```bash
 pytest tests/
 ```
+> I don't know why **test_twitivity.py** doesn't work on Github actions, so I
+don't test that on Github.
 
 ## Customize app.py to manage multiple developer accounts
 
@@ -174,7 +173,7 @@ The **webhook** template is something like this.
 {
     'name_of_the_webhook': {
         'consumer_secret': 'CONSUMER_SECRET',
-        'subcriptions': [
+        'subscriptions': [
             {
                 'user_id': 'USER_ID',
                 'callable': Callable
@@ -186,7 +185,7 @@ The **webhook** template is something like this.
 - **name_of_the_webhook** will be used as flask app route. You can add many
 webhooks by adding key to the **webhook** dictionary.
 - **consumer_secret** is the consumer secret of Twitter Dev App.
-- **subcriptions** is list of Twitter Dev Account that subscribe to the webhook.
+- **subscriptions** is list of Twitter Dev Account that subscribe to the webhook.
 It can be up to 15 accounts for free AAPI Dev Environment.
 - **user_id** can be `'ACCESS_TOKEN'.split('-')[0]`. The user id of
 the account is actually mentioned on the **ACCESS_TOKEN**.
@@ -205,7 +204,7 @@ like flask app route, it doesn't need slash '/'. Example: `callback`
 
 This method has no argument and returns flask WSGI app.
 
-### Multiple subcriptions
+### Multiple subscriptions
 
 ```python
 >>> user1 = Activity('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN_1',

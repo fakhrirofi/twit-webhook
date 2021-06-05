@@ -24,18 +24,18 @@ def get_xauth_access_token(consumer_key: str, consumer_secret: str,
             'x_auth_mode'       : 'client_auth'
         })
     )
-    access_token = dict(urllib.parse.parse_qsl(token.decode()))
-    if 'oauth_token' not in access_token:
+    token = dict(urllib.parse.parse_qsl(token.decode()))
+    if 'oauth_token' not in token:
         raise Exception("Invalid credentials!")
     return dict(
-        access_token=access_token['oauth_token'],
-        access_token_secret=access_token['oauth_token_secret']
+        access_token=token['oauth_token'],
+        access_token_secret=token['oauth_token_secret']
     )
 
 def verify_credentials(consumer_key: str, consumer_secret: str,
-        access_key: str, access_secret: str):
+        access_token: str, access_token_secret: str):
     auth = OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_key, access_secret)
+    auth.set_access_token(access_token, access_token_secret)
     api = API(auth)
     return api.verify_credentials()
 

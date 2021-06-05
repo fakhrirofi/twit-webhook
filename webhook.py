@@ -14,8 +14,18 @@ class Event:
     def __init__(self, callback_route: str, webhook: Dict[str, Dict]):
         '''
         :param callback_route: flask wsgi route without slash '/'
-        :param webhook: list of webhook dictionary that contains the following keys:\
-            user_id, consumer_secret (optional), and function
+        :param webhook: dictionary that will be used to process data.
+            {
+                'name_of_the_webhook': {
+                    'consumer_secret': 'CONSUMER_SECRET',
+                    'subscriptions': [
+                        {
+                            'user_id': 'USER_ID',
+                            'callable': Callable
+                        }
+                    ]
+                }
+            }
         '''
         if not validate_url(f"https://testing.com/{callback_route}"):
             raise ValueError(f"The callback_route '{callback_route}' is invalid")
@@ -56,7 +66,7 @@ class Event:
                 data = request.get_json()
                 webhook = list(filter(
                     lambda x: x['user_id'] == data['for_user_id'],
-                    self.webhook[webhook_name]['subcriptions']))
+                    self.webhook[webhook_name]['subscriptions']))
                 try:
                     assert webhook
                 except AssertionError:
