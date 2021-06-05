@@ -1,5 +1,5 @@
 from flask import Flask, request
-from typing import TypedDict, Callable, List, NoReturn, Dict
+from typing import Dict
 from validators import url as validate_url
 import hmac
 import hashlib
@@ -9,17 +9,9 @@ import json
 
 logger = logging.getLogger(__name__)
 
-class DictSubscription(TypedDict):
-    user_id: str
-    callable: Callable[[dict], NoReturn]
-
-class DictWebhook(TypedDict):
-    consumer_secret: str
-    subcriptions: List[DictSubscription]
-
 class Event:
 
-    def __init__(self, callback_route: str, webhook: Dict[str, DictWebhook]):
+    def __init__(self, callback_route: str, webhook: Dict[str, Dict]):
         '''
         :param callback_route: flask wsgi route without slash '/'
         :param webhook: list of webhook dictionary that contains the following keys:\
@@ -34,7 +26,7 @@ class Event:
         for x in list(webhook):
             if not validate_url(f"https://testing.com/{x}"):
                 raise ValueError(f"The webhook_name '{x}' is invalid")
-        self.webhook: Dict[str, DictWebhook] = webhook
+        self.webhook: Dict[str, Dict] = webhook
 
     def get_wsgi(self) -> Flask:
         # Ref: https://github.com/twitivity/twitivity

@@ -46,4 +46,4 @@ jobs:
           XAUTH_CONSUMER_KEY: ${{ secrets.XAUTH_CONSUMER_KEY }}
           XAUTH_CONSUMER_SECRET: ${{ secrets.XAUTH_CONSUMER_SECRET }}
         run: |
-          pytest tests/
+          pytest tests/test_xauth.py tests/test_webhook.py
