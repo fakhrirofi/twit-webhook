@@ -1,7 +1,7 @@
+from tweepy import OAuthHandler, API
 import oauth2
 import urllib
 
-from tweepy import OAuthHandler, API
 
 def get_xauth_access_token(consumer_key: str, consumer_secret: str,
         username: str, password: str) -> dict:
@@ -39,7 +39,7 @@ def verify_credentials(consumer_key: str, consumer_secret: str,
     api = API(auth)
     return api.verify_credentials()
 
-class OAuth:
+class TwitterOAuth:
 
     def __init__(self, consumer_key: str, consumer_secret: str):
         self._auth = OAuthHandler(consumer_key, consumer_secret)
@@ -55,7 +55,7 @@ class OAuth:
         :param verifier: PIN
         :return: dict of access_token and access_token_secret
         '''
-        data = self._auth.get_access_token(verifier)
+        data = self._auth.get_access_token(str(verifier))
         return dict(
             access_token=data[0],
             access_token_secret=data[1]

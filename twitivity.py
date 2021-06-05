@@ -5,8 +5,8 @@
 from typing import NoReturn
 from tweepy.error import TweepError
 from tweepy import OAuthHandler
+from validators import url as validate_url
 import json
-import re
 import requests
 
 
@@ -52,11 +52,17 @@ class Activity:
                     auth=self._auth.apply_auth(),
                     data=data,
                 )
+                if response.status_code not in [200, 204]:
+                    raise Exception(str(response.json()))
                 return response
         except TweepError:
             raise
 
     def register_webhook(self, callback_url: str) -> json:
+        if "https://" not in callback_url:
+            raise ValueError(f"The callback_url `{callback_url}` scheme must be https")
+        elif not validate_url(callback_url):
+            raise ValueError(f"The callback_url '{callback_url}' is invalid")
         try:
             return self.api(
                 method="POST",
@@ -95,8 +101,7 @@ class Activity:
             for environment in self.webhooks()['environments']:
                 if environment['environment_name'] == self.env_name:
                     for webhook in environment['webhooks']:
-                        webhook_id = environment['webhooks'][webhook]['id']
-                        self.delete(webhook_id)
+                        self.delete(webhook['id'])
         except Exception as e:
             raise e
 

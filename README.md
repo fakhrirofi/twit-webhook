@@ -1,12 +1,13 @@
-# twit-webhook
+# twitter-webhook
 Simple Twitter webhook to manage multiple Twitter developer accounts using
-[twitivity](https://github.com/twitivity/twitivity).
+[twitivity](https://github.com/twitivity/twitivity). <br>
+Supported Python version: **Python 3.6**, **3.7** , **3.8**, and **3.9**.
 
 ## Installation
 
 ```bash
-git clone https://github.com/fakhrirofi/twit-webhook.git
-cd twit-webhook
+git clone https://github.com/fakhrirofi/twitter-webhook.git
+cd twitter-webhook
 python3 -m venv venv
 . venv/bin/activate # linux
 # venv\Scripts\activate # windows
@@ -15,26 +16,23 @@ pip3 install -r requirements.txt
 
 ## Set up the environment
 
-Rename `.env.example` to `.env`, then edit the contents.
-
-- You can get the `ENV_NAME` by creating Account Activity API (AAPI) dev
+Rename `.env.example` to `.env` and edit the contents.
+- You can get the **ENV_NAME** by creating Account Activity API (AAPI) dev
 environment at https://developer.twitter.com/en/account/environments.
-
 - There are two options to port forwarding using ngrok:
     * command line
-
         ```bash
         ngrok http 8080
         ```
     * using pyngrok
-
         ```python
-        from pyngrok import ngrok
-        http = ngrok.connect(8080, bind_tls=True)
-        url = http.public_url
-        print(url)
+        >>> from pyngrok import ngrok
+        >>> http = ngrok.connect(8080, bind_tls=True)
+        >>> url = http.public_url
+        >>> print(url)
         ```
-    Copy the url (https) to the `URL` at .env file. Don't close the ngrok process.
+    Copy the url (https scheme) to the **URL** at .env file. Don't close the
+    ngrok process.
 
 ## Play time!
 
@@ -48,35 +46,36 @@ flask run --port 8080
 ### Register webhook to twitter
 
 ```python
-from twitivity import Activity
-import os
+>>> from twitivity import Activity
+>>> from dotenv import load_dotenv
+>>> import os
 
-reg = Activity(os.environ['CONSUMER_KEY'], os.environ['CONSUMER_SECRET'],
-               os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET'],
-               os.environ['ENV_NAME'])
+>>> load_dotenv('.env')
+
+>>> reg = Activity(os.environ['CONSUMER_KEY'], os.environ['CONSUMER_SECRET'],
+>>>               os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET'],
+>>>               os.environ['ENV_NAME'])
 # because we use ngrok (dynamic url) to run the webhook, we should delete all
 # webhooks before registering a new webhook url
-reg.delete_all()
-reg.register_webhook(f"{os.environ['URL']}/callback/{os.environ['ACCESS_TOKEN'].split('-')[0]}")
+>>> reg.delete_all()
+>>> reg.register_webhook(f"{os.environ['URL']}/callback/name_of_the_webhook")
 ```
-
-- `os.environ['ACCESS_TOKEN'].split('-')[0]` is the user id of the
-developer account
-
-- The reason there is `callback` on the last line is because the
-`callback_route` argument on `Event` class object (at app.py) is `callback`. For
-more detail look at [Event class](#event-class)
+- The reason there is `/callback/` on the last line is because the
+**callback_route** argument on **Event** object (at app.py) is `callback`. For more
+detail look at [Event class](#event-class).
+- `name_of_the_webhook` is the name of webhook. Look at [Webhook variable](#webhook-variable)
+for more detail.
 
 ### Add subscription to the webhook
 
 ```python
-reg.subscribe()
+>>> reg.subscribe()
 ```
 
 Send any DM to the account, the json data from twitter will be printed on the
 terminal screen. Yeay!
 
-### Why `register` and `subscribe` are different?
+### Why [register](#register-webhook-to-twitter) and [subscribe](#add-subscription-to-the-webhook) are different?
 
 If you look at [subcriptions dashboard](https://developer.twitter.com/en/account/subscriptions),
 you will see this graph.
@@ -85,23 +84,33 @@ you will see this graph.
 
 One AAPI dev environment can only be used to register one webhook. The owner 
 (with access token) of Twitter Dev App who can only register the webhook.
-> Look at [Register webhook](#register-webhook-twitter), there is 
-`reg.delete_all()`. The purpose is to delete all of the previous webhook. So
+
+> Look at [Register webhook](#register-webhook-to-twitter), there is 
+**reg.delete_all()**. The purpose is to delete all of the previous webhook. So
 we can register a new webhook.
 
 One (free) AAPI dev environment can be used to subscribe up to 15 developer
-account. To do that, look at [Multiple subcriptions](#multiple-subcriptions).
+accounts activity. To do that, look at [Multiple subcriptions](#multiple-subcriptions).
 
-### Multiple subcriptions
+## Automation example
 
-look at [Auth](#auth) to generate ACCESS TOKEN with the same CONSUMER KEY.
+Copy or move automation.py from example to the root folder.
+```bash
+cp example/automation.py automation.py # copy
+# mv example/automation.py automation.py # move
+```
+
+Run automation.py by using syntax:
+```bash
+python3 automation.py
+```
+
+If you want to forward port using ngrok for a long time, you should create a
+ngrok accoun. Without Ngrok Auth Token, the ngrok process is limited by time.
+Copy the Ngrok Auth Token from https://dashboard.ngrok.com/get-started/your-authtoken,
+then set the pyngrok auth token by adding this code.
 ```python
-user1 = Activity('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN_1',
-                 'ACCESS_TOKEN_SECRET_1', 'ENV_NAME')
-user1.subscribe()
-user2 = Activity('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN_2',
-                 'ACCESS_TOKEN_SECRET_2', 'ENV_NAME')
-user2.subscribe()
+ngrok.set_auth_token('NGROK_AUTH_TOKEN')
 ```
 
 ## Auth
@@ -109,21 +118,21 @@ user2.subscribe()
 ### Generate TOKEN using OAuth
 
 ```python
-from tools import OAuth
-auth = OAuth('CONSUMER_KEY', 'CONSUMER_SECRET')
-url = auth.get_url()
-print(url)
+>>> from twitter_auth import TwitterOAuth
+>>> auth = TwitterOAuth('CONSUMER_KEY', 'CONSUMER_SECRET')
+>>> url = auth.get_url()
+>>> print(url)
 # open the url, authorize, and copy the PIN
-token = auth.get_token('PIN')
-print(token)
+>>> token = auth.get_token('PIN')
+>>> print(token)
 ```
 
 ### Generate TOKEN using XAuth
 ```python
-from tools import get_xauth_access_token
-token = get_xauth_access_token('XAUTH_CONSUMER_KEY', 'XAUTH_CONSUMER_SECRET',
-                               'TWITTER_USERNAME', 'TWITTER_PASSWORD')
-print(token)
+>>> from twitter_auth import get_xauth_access_token
+>>> token = get_xauth_access_token('XAUTH_CONSUMER_KEY', 'XAUTH_CONSUMER_SECRET',
+>>>                                'TWITTER_USERNAME', 'TWITTER_PASSWORD')
+>>> print(token)
 ```
 
 ### (Un)Official Consumer Key
@@ -141,57 +150,70 @@ Consumer secret: IQWdVyqFxghAtURHGeGiWAsmCAGmdW3WmbEx6Hck
 Consumer key:    3rJOl1ODzm9yZy63FACdg
 Consumer secret: 5jPoQ5kQvMJFDYRNE8bQ4rHuds4xJqhvgNJM4awaE8
 ```
-**Account that using (Un)Official Consumer Key can't be used to `subscribe` webhook**
+**Account that using (Un)Official Consumer Key can't be used to subscribe account activity**,
+because we need **ENV_NAME** to register webhook and subscribe account activity.
+
+## Tests
+
+Rename `test.env.example` to `test.env` and edit the contents.<br>
+Run the test by using syntax:
+```bash
+pytest tests/
+```
 
 ## Customize app.py to manage multiple developer accounts
 
 You can add many functions that have one parameter (json data type) to process
-data sent from twitter.
+data sent from twitter. <br>
+Json data reference: https://developer.twitter.com/en/docs/twitter-api/enterprise/account-activity-api/guides/account-activity-data-objects
 
-Data reference: https://developer.twitter.com/en/docs/twitter-api/enterprise/account-activity-api/guides/account-activity-data-objects
+### **webhook** variable
 
-### `webhook` variable
-
-list of dictionary that contains `user_id`, `consumer_secret` and `function`.
+The **webhook** template is something like this.
 ```python
-[{
-    'user_id': 'USER_ID',
-    'consumer_secret': 'CONSUMER_SECRET',
-    'function': 'Callable',
-}]
+{
+    'name_of_the_webhook': {
+        'consumer_secret': 'CONSUMER_SECRET',
+        'subcriptions': [
+            {
+                'user_id': 'USER_ID',
+                'callable': Callable
+            },
+        ]
+    },
+}
 ```
+- **name_of_the_webhook** will be used as flask app route. You can add many
+webhooks by adding key to the **webhook** dictionary.
+- **consumer_secret** is the consumer secret of Twitter Dev App.
+- **subcriptions** is list of Twitter Dev Account that subscribe to the webhook.
+It can be up to 15 accounts for free AAPI Dev Environment.
+- **user_id** can be `'ACCESS_TOKEN'.split('-')[0]`. The user id of
+the account is actually mentioned on the **ACCESS_TOKEN**.
+- **callable** is a Callable that will be called when webhook (with specified
+user id) receives data. It has one parameter and the type is json (dict). 
 
-- `USER_ID` can be `'ACCESS_TOKEN'.split('-')[0]`. The user id of
-the account is actually mentioned on the `ACCESS_TOKEN`.
+### **Event** class
 
-- `consumer_secret` is optional (can be `None`) but the key must be exists on
-the dictionary. It's required when the owner of `user_id` is the owner of
-Twitter Dev App.
+**Event(callback_route, webhook)**
 
-- `function` is a Callable that will be called when webhook receives data. It
-has one parameter and the type is json. 
-
-### `Event` class
-
-**`Event(callback_route, webhook)`**
-
-- `callback_route` is the route that will be receive data from twitter. Not
+- **callback_route** is the route that will receives data from twitter. Not
 like flask app route, it doesn't need slash '/'. Example: `callback`
+- **webhook** is [webhook variable](#webhook-variable).
 
-- `webhook` is [webhook variable](#webhook-variable)
+#### **get_wsgi** method
 
-#### `get_wsgi` method
+This method has no argument and returns flask WSGI app.
 
-This method has no argument and returns flask WSGI app
+### Multiple subcriptions
 
-## Automation example
-
-Copy or move automation.py from example to the root folder.
-```bash
-cp example/automation.py automation.py # copy
-# mv example/automation.py automation.py # move
+```python
+>>> user1 = Activity('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN_1',
+>>>                  'ACCESS_TOKEN_SECRET_1', 'ENV_NAME')
+>>> user1.subscribe()
+>>> user2 = Activity('CONSUMER_KEY', 'CONSUMER_SECRET', 'ACCESS_TOKEN_2',
+>>>                  'ACCESS_TOKEN_SECRET_2', 'ENV_NAME')
+>>> user2.subscribe()
 ```
-Run automation.py by using syntax:
-```bash
-python3 automation.py
-```
+Don't forget to edit the **webhook** variable. Look at [Auth](#auth) to generate
+ACCESS TOKEN with the same CONSUMER KEY.

@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from tools import get_xauth_access_token, verify_credentials
+from twitter_auth import get_xauth_access_token, verify_credentials
 import os
 
 load_dotenv('test.env')
