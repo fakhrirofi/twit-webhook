@@ -1,7 +1,7 @@
 # twit-webhook
 Simple Twitter webhook to manage multiple Twitter developer accounts using
 [twitivity](https://github.com/twitivity/twitivity). <br>
-Supported Versions: **Python 3.7**, **Python 3.8**, and **Python 3.9**.
+Supported versions: **Python 3.7**, **Python 3.8**, and **Python 3.9**.
 
 ## Installation
 
@@ -155,7 +155,7 @@ because we need **ENV_NAME** to register webhook and create subscription.
 Rename **test.env.example** to **test.env** and edit the contents.<br>
 Run the test by using syntax:
 ```bash
-pytest tests/
+pytest tests
 ```
 > I don't know why **test_twitivity.py** doesn't work on Github actions, so I
 don't test that on Github.

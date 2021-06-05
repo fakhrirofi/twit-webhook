@@ -29,7 +29,7 @@ class Event:
         '''
         if not validate_url(f"https://testing.com/{callback_route}"):
             raise ValueError(f"The callback_route '{callback_route}' is invalid")
-        elif '/' in callback_route:
+        if '/' in callback_route:
             raise ValueError(f"The callback_route '{callback_route}' doesn't need slash '/'")
         self.callback_route: str = callback_route
         
@@ -37,6 +37,25 @@ class Event:
             if not validate_url(f"https://testing.com/{x}"):
                 raise ValueError(f"The webhook_name '{x}' is invalid")
         self.webhook: Dict[str, Dict] = webhook
+
+    def create_signature(self, webhook_name):
+        hash_digest = hmac.digest(
+            key=self.webhook[webhook_name]['consumer_secret'].encode('utf-8'),
+            msg=request.args.get('crc_token').encode('utf-8'),
+            digest=hashlib.sha256)
+        return base64.b64encode(hash_digest).decode("ascii")
+
+    def verify_request(self, webhook_name):
+        try:
+            signature = request.headers["X-Twitter-Webhooks-Signature"][7:]
+            hash_digest = hmac.digest(
+                key=self.webhook[webhook_name]['consumer_secret'].encode('utf-8'),
+                msg=request.get_data(),
+                digest=hashlib.sha256)
+            return hmac.compare_digest(
+                signature, base64.b64encode(hash_digest).decode('ascii'))
+        except Exception:
+            return False
 
     def get_wsgi(self) -> Flask:
         # Ref: https://github.com/twitivity/twitivity
@@ -50,29 +69,28 @@ class Event:
                 if webhook_name not in list(self.webhook):
                     logger.error('webhook name not found')
                     return {"code": 404}, 404
-                webhook = self.webhook[webhook_name]
-                hash_digest = hmac.digest(
-                    key=webhook['consumer_secret'].encode('utf-8'),
-                    msg=request.args.get('crc_token').encode('utf-8'),
-                    digest=hashlib.sha256)
+                signature = self.create_signature(webhook_name)
                 return {
-                    "response_token": "sha256="
-                    + base64.b64encode(hash_digest).decode("ascii")}
+                    "response_token": f"sha256={signature}"}
 
             elif request.method == 'POST':
                 if webhook_name not in list(self.webhook):
                     logger.error('webhook name not found')
                     return {"code": 404}, 404
+                if not self.verify_request(webhook_name):
+                    logger.error('Invalid request signature')
+                    return {"code": 403}, 403
+                
                 data = request.get_json()
-                webhook = list(filter(
+                user = list(filter(
                     lambda x: x['user_id'] == data['for_user_id'],
                     self.webhook[webhook_name]['subscriptions']))
                 try:
-                    assert webhook
+                    assert user
                 except AssertionError:
                     logger.error('user id not found')
                     return {"code": 404}, 404
-                webhook[0]['callable'](data)
+                user[0]['callable'](data)
                 return {"code": 200}
         
         return app
