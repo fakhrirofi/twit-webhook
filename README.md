@@ -155,7 +155,7 @@ because we need **ENV_NAME** to register webhook and create subscription.
 Rename **test.env.example** to **test.env** and edit the contents.<br>
 Run the test by using syntax:
 ```bash
-pytest tests
+pytest tests/
 ```
 > I don't know why **test_twitivity.py** doesn't work on Github actions, so I
 don't test that on Github.
@@ -178,7 +178,7 @@ The **webhook** template is something like this.
                 'user_id': 'USER_ID',
                 'callable': Callable
             },
-        ]
+        ],
     },
 }
 ```
@@ -234,8 +234,7 @@ ACCESS TOKEN with the same CONSUMER KEY.
     heroku config:set ACCESS_TOKEN=your-credential
     ```
     You can set the config vars from your app's **Settings** tab in the Heroku
-    dashboard as well.
-
+    dashboard as well. <br>
     Note: **ACCESS_TOKEN** is used to get the user id from it.
 
 - Push to Heroku

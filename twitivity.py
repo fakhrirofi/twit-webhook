@@ -16,8 +16,14 @@ class Activity:
     _version: str = "1.1"
     _product: str = "account_activity"
 
-    def __init__(self, consumer_key: str, consumer_secret: str, access_token: str,
-            access_token_secret: str, env_name: str):
+    def __init__(
+        self,
+        consumer_key: str,
+        consumer_secret: str,
+        access_token: str,
+        access_token_secret: str,
+        env_name: str,
+    ):
         """
         :param consumer_key: Twitter consumer key
         :param consumer_secret: Twitter consumer secret
@@ -73,8 +79,7 @@ class Activity:
             raise e
 
     def refresh(self, webhook_id: str) -> NoReturn:
-        """Refreshes CRC for the provided webhook_id.
-        """
+        """Refreshes CRC for the provided webhook_id."""
         try:
             return self.api(
                 method="PUT",
@@ -84,8 +89,7 @@ class Activity:
             raise e
 
     def delete(self, webhook_id: str) -> NoReturn:
-        """Removes the webhook from the provided webhook_id.
-        """
+        """Removes the webhook from the provided webhook_id."""
         try:
             return self.api(
                 method="DELETE",
@@ -93,21 +97,19 @@ class Activity:
             )
         except Exception as e:
             raise e
-    
+
     def delete_all(self) -> NoReturn:
-        """Delete all webhooks
-        """
+        """Delete all webhooks"""
         try:
-            for environment in self.webhooks()['environments']:
-                if environment['environment_name'] == self.env_name:
-                    for webhook in environment['webhooks']:
-                        self.delete(webhook['id'])
+            for environment in self.webhooks()["environments"]:
+                if environment["environment_name"] == self.env_name:
+                    for webhook in environment["webhooks"]:
+                        self.delete(webhook["id"])
         except Exception as e:
             raise e
 
     def subscribe(self) -> NoReturn:
-        """Create subscription to the webhook
-        """
+        """Create subscription to the webhook"""
         try:
             return self.api(
                 method="POST",

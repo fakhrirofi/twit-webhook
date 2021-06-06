@@ -6,14 +6,19 @@ from twitivity import Activity
 from webhook import Event
 import os
 
-load_dotenv('test.env')
+load_dotenv("test.env")
+
 
 class TestTwitivity:
     URL: str = None
     webhook_id: str = None
-    reg = Activity(os.environ['CONSUMER_KEY'], os.environ['CONSUMER_SECRET'],
-                   os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET'],
-                   os.environ['ENV_NAME'])
+    reg = Activity(
+        os.environ["CONSUMER_KEY"],
+        os.environ["CONSUMER_SECRET"],
+        os.environ["ACCESS_TOKEN"],
+        os.environ["ACCESS_TOKEN_SECRET"],
+        os.environ["ENV_NAME"],
+    )
 
     @classmethod
     def start_webhook(cls):
@@ -24,20 +29,15 @@ class TestTwitivity:
             assert isinstance(data, dict)
 
         webhook = {
-            'testing': {
-                'consumer_secret': os.environ['CONSUMER_SECRET'],
-                'subscriptions': [
-                    {
-                    'user_id': '123456789',
-                    'callable': callable
-                    }
-                ]
+            "testing": {
+                "consumer_secret": os.environ["CONSUMER_SECRET"],
+                "subscriptions": [{"user_id": "123456789", "callable": callable}],
             }
         }
 
-        server = Event('callback', webhook)
+        server = Event("callback", webhook)
         app = server.get_wsgi()
-        t = Thread(target=app.run, kwargs={'port': 8080})
+        t = Thread(target=app.run, kwargs={"port": 8080})
         t.daemon = True
         t.start()
         sleep(0.5)
@@ -53,11 +53,11 @@ class TestTwitivity:
 
     def test_register_webhook(self):
         response = self.reg.register_webhook(f"{self.URL}/callback/testing")
-        self.set_webhook_id(response['id'])
+        self.set_webhook_id(response["id"])
 
     def test_subscribe_webhook(self):
         self.reg.subscribe()
-    
+
     def test_refresh(self):
         self.reg.refresh(self.webhook_id)
         ngrok.kill()
