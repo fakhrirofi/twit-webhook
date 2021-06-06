@@ -10,7 +10,8 @@ import base64
 class TestTwitivity:
     webhook: dict = None
 
-    def create_signature(self, key, msg, digest=hashlib.sha256):
+    @staticmethod
+    def create_signature(key, msg, digest=hashlib.sha256):
         hash_digest = hmac.digest(
             key=key,
             msg=msg,

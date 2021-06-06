@@ -61,7 +61,7 @@ flask run --port 8080
 >>>               os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET'],
 >>>               os.environ['ENV_NAME'])
 # because we use ngrok (dynamic url) to run the webhook, we should delete all
-# webhooks before registering a new webhook url
+# of the previous webhooks before registering a new webhook url
 >>> reg.delete_all()
 >>> reg.register_webhook(f"{os.environ['URL']}/callback/name_of_the_webhook")
 ```
@@ -216,3 +216,34 @@ This method has no argument and returns flask WSGI app.
 ```
 Don't forget to edit the **webhook** variable. Look at [Auth](#auth) to generate
 ACCESS TOKEN with the same CONSUMER KEY.
+
+## Deploy to Heroku
+
+- Add `gunicorn==20.1.0` and `psycopg2==2.8.6` to requirements.txt.
+
+- Create Procfile file
+    ```
+    # Procfile
+    web: gunicorn app:app
+    ```
+
+- Configure Heroku app
+    ```bash
+    heroku git:remote -a your-heroku-app-name
+    heroku config:set CONSUMER_SECRET=your-credential
+    heroku config:set ACCESS_TOKEN=your-credential
+    ```
+    You can set the config vars from your app's **Settings** tab in the Heroku
+    dashboard as well.
+
+    Note: **ACCESS_TOKEN** is used to get the user id from it.
+
+- Push to Heroku
+    ```bash
+    git add .
+    git commit -m 'initial commit'
+    git push heroku main
+    ```
+
+- [Register](#register-webhook-to-twitter) and [Subscribe](#add-subscription-to-the-webhook)
+the webhook.

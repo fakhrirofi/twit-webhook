@@ -38,19 +38,19 @@ class Event:
                 raise ValueError(f"The webhook_name '{x}' is invalid")
         self.webhook: Dict[str, Dict] = webhook
 
-    def create_signature(self, webhook_name):
+    def create_signature(self, webhook_name: str, crc_token: str) -> str:
         hash_digest = hmac.digest(
             key=self.webhook[webhook_name]['consumer_secret'].encode('utf-8'),
-            msg=request.args.get('crc_token').encode('utf-8'),
+            msg=crc_token.encode('utf-8'),
             digest=hashlib.sha256)
         return base64.b64encode(hash_digest).decode("ascii")
 
-    def verify_request(self, webhook_name):
+    def verify_request(self, webhook_name: str, request_data: bytes) -> bool:
         try:
             signature = request.headers["X-Twitter-Webhooks-Signature"][7:]
             hash_digest = hmac.digest(
                 key=self.webhook[webhook_name]['consumer_secret'].encode('utf-8'),
-                msg=request.get_data(),
+                msg=request_data,
                 digest=hashlib.sha256)
             return hmac.compare_digest(
                 signature, base64.b64encode(hash_digest).decode('ascii'))
@@ -69,7 +69,8 @@ class Event:
                 if webhook_name not in list(self.webhook):
                     logger.error('webhook name not found')
                     return {"code": 404}, 404
-                signature = self.create_signature(webhook_name)
+                signature = self.create_signature(
+                    webhook_name, request.args.get('crc_token'))
                 return {
                     "response_token": f"sha256={signature}"}
 
@@ -77,7 +78,7 @@ class Event:
                 if webhook_name not in list(self.webhook):
                     logger.error('webhook name not found')
                     return {"code": 404}, 404
-                if not self.verify_request(webhook_name):
+                if not self.verify_request(webhook_name, request.get_data()):
                     logger.error('Invalid request signature')
                     return {"code": 403}, 403
                 
