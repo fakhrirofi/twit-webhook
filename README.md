@@ -1,5 +1,5 @@
 # twit-webhook
-Simple Twitter webhook to manage multiple Twitter developer accounts using
+Simple Twitter webhook to manage multiple accounts using
 [twitivity](https://github.com/twitivity/twitivity). <br>
 Supported versions: **Python 3.7**, **Python 3.8**, and **Python 3.9**.
 
@@ -94,7 +94,7 @@ One AAPI dev environment can only be used to register one webhook. The owner
 **reg.delete_all()**. The purpose is to delete all of the previous webhook. So
 we can register a new webhook.
 
-One (free) AAPI dev environment can be used to subscribe up to 15 developer
+One (free) AAPI dev environment can be used to subscribe up to 15
 accounts. To do that, look at [Multiple subscriptions](#multiple-subscriptions).
 
 ## Automation example
@@ -160,7 +160,7 @@ pytest tests/
 > I don't know why **test_twitivity.py** doesn't work on Github actions, so I
 don't test that on Github.
 
-## Customize app.py to manage multiple developer accounts
+## Customize app.py to manage multiple accounts
 
 You can add many functions that have one parameter (json data type) to process
 data sent from twitter. <br>
