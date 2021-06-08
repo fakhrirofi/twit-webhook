@@ -1,7 +1,7 @@
 # twit-webhook
 Simple Twitter webhook to manage multiple accounts using
 [twitivity](https://github.com/twitivity/twitivity). <br>
-Supported versions: **Python 3.7**, **Python 3.8**, and **Python 3.9**.
+Supported **Python** versions: **3.7**, **3.8**, and **3.9**.
 
 ## Installation
 
@@ -31,8 +31,8 @@ environment at https://developer.twitter.com/en/account/environments.
         >>> url = http.public_url
         >>> print(url)
         ```
-    Copy the url (https scheme) to the **URL** at .env file. Don't close the
-    ngrok process.
+    The url (https scheme) will be used to [Register webhook](#register-webhook-to-twitter).
+    Don't close the ngrok process.
     
     You can run examples/configure.py as well. Copy that to the root folder,
     then run by using syntax: `python3 configure.py`. It will automatically
@@ -63,8 +63,9 @@ flask run --port 8080
 # because we use ngrok (dynamic url) to run the webhook, we should delete all
 # of the previous webhooks before registering a new webhook url
 >>> reg.delete_all()
->>> reg.register_webhook(f"{os.environ['URL']}/callback/name_of_the_webhook")
+>>> reg.register_webhook(f"NGROK_URL/callback/name_of_the_webhook")
 ```
+- Replace **NGROK_URL** with your new webhook url.
 - The reason there is `/callback/` on the last line is because the
 **callback_route** argument on **Event** object (at app.py) is `callback`. For more
 detail look at [Event class](#event-class).
@@ -77,7 +78,7 @@ for more detail.
 >>> reg.subscribe()
 ```
 
-Send any DM to the account, the json data from twitter will be printed on the
+Send DM to the account, the json data from twitter will be printed on the
 terminal screen. Yeay!
 
 ### Why [register](#register-webhook-to-twitter) and [subscribe](#add-subscription-to-the-webhook) are different?
@@ -89,6 +90,7 @@ you will see this graph.
 
 One AAPI dev environment can only be used to register one webhook. The owner 
 (with access token) of Twitter Dev App who can only register the webhook.
+Don't forget to edit the **webhook** variable before registering a new webhook.
 
 > Look at [Register webhook](#register-webhook-to-twitter), there is 
 **reg.delete_all()**. The purpose is to delete all of the previous webhook. So
@@ -162,47 +164,31 @@ don't test that on Github.
 
 ## Customize app.py to manage multiple accounts
 
-You can add many functions that have one parameter (json data type) to process
-data sent from twitter. <br>
-Json data reference: https://developer.twitter.com/en/docs/twitter-api/enterprise/account-activity-api/guides/account-activity-data-objects
-
 ### **webhook** variable
 
 The **webhook** template is something like this.
 ```python
 {
-    'name_of_the_webhook': {
-        'consumer_secret': 'CONSUMER_SECRET',
-        'subscriptions': [
-            {
-                'user_id': 'USER_ID',
-                'callable': Callable
-            },
-        ],
-    },
+    'name_of_the_webhook': 'CONSUMER_SECRET',
 }
 ```
 - **name_of_the_webhook** will be used as flask app route. You can add many
-webhooks by adding key to the **webhook** dictionary.
-- **consumer_secret** is the consumer secret of Twitter Dev App.
-- **subscriptions** is list of Twitter Dev Account that subscribe to the webhook.
-It can be up to 15 accounts for free AAPI Dev Environment.
-- **user_id** can be `'ACCESS_TOKEN'.split('-')[0]`. The user id of
-the account is actually mentioned on the **ACCESS_TOKEN**.
-- **callable** is a Callable that will be called when webhook (with specified
-user id) receives data. It has one parameter and the type is json (dict). 
+webhooks by adding data to the **webhook** dictionary.
 
 ### **Event** class
 
-**Event(callback_route, webhook)**
+**Event(callback_route, webhook, on_data)**
 
 - **callback_route** is the route that will receives data from twitter. Not
 like flask app route, it doesn't need slash '/'. Example: `callback`
 - **webhook** is [webhook variable](#webhook-variable).
+- **on_data** is a callable that will be called when the webhook receives data.
+    It only has one parameter. The argument will be dict (json type), reference:
+    https://developer.twitter.com/en/docs/twitter-api/enterprise/account-activity-api/guides/account-activity-data-objects.
 
 #### **get_wsgi** method
 
-This method has no argument and returns flask WSGI app.
+This method has no parameter and returns flask WSGI app.
 
 ### Multiple subscriptions
 
@@ -214,8 +200,7 @@ This method has no argument and returns flask WSGI app.
 >>>                  'ACCESS_TOKEN_SECRET_2', 'ENV_NAME')
 >>> user2.subscribe()
 ```
-Don't forget to edit the **webhook** variable. Look at [Auth](#auth) to generate
-ACCESS TOKEN with the same CONSUMER KEY.
+Look at [Auth](#auth) to generate access key with the same webhook.
 
 ## Deploy to Heroku
 
@@ -231,11 +216,9 @@ ACCESS TOKEN with the same CONSUMER KEY.
     ```bash
     heroku git:remote -a your-heroku-app-name
     heroku config:set CONSUMER_SECRET=your-credential
-    heroku config:set ACCESS_TOKEN=your-credential
     ```
     You can set the config vars from your app's **Settings** tab in the Heroku
-    dashboard as well. <br>
-    Note: **ACCESS_TOKEN** is used to get the user id from it.
+    dashboard as well.
 
 - Push to Heroku
     ```bash

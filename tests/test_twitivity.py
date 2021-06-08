@@ -25,17 +25,14 @@ class TestTwitivity:
         http = ngrok.connect(8080, bind_tls=True)
         cls.URL = http.public_url
 
-        def callable(data):
+        def process_data(data):
             assert isinstance(data, dict)
 
         webhook = {
-            "testing": {
-                "consumer_secret": os.environ["CONSUMER_SECRET"],
-                "subscriptions": [{"user_id": "123456789", "callable": callable}],
-            }
+            "testing": os.environ["CONSUMER_SECRET"],
         }
 
-        server = Event("callback", webhook)
+        server = Event("callback", webhook, process_data)
         app = server.get_wsgi()
         t = Thread(target=app.run, kwargs={"port": 8080})
         t.daemon = True

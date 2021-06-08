@@ -10,7 +10,7 @@ print("Creating Ngrok process")
 http = ngrok.connect(8080, bind_tls=True)
 URL = http.public_url
 print(f"NGROK_URL: {URL}")
-input("Start the webhook, then press enter...")
+input("Run the webhook on port 8080, then press enter...")
 
 reg = Activity(
     os.environ["CONSUMER_KEY"],

@@ -14,7 +14,7 @@ http = ngrok.connect(8080, bind_tls=True)
 URL = http.public_url
 
 # function that will be called when webhook receives data
-def callable(data: json):
+def process_data(data: json):
     """
     :param data: Ref: https://developer.twitter.com/en/docs/twitter-api/enterprise/account-activity-api/guides/account-activity-data-objects
     """
@@ -23,16 +23,11 @@ def callable(data: json):
 
 
 webhook = {
-    "name_of_the_webhook": {  # will be used as flask app route
-        "consumer_secret": os.environ["CONSUMER_SECRET"],
-        "subscriptions": [
-            {"user_id": os.environ["ACCESS_TOKEN"].split("-")[0], "callable": callable},
-        ],
-    },
+    "name_of_the_webhook": os.environ["CONSUMER_SECRET"],
 }
 
 callback_route = "callback"
-server = Event(callback_route, webhook)
+server = Event(callback_route, webhook, process_data)
 app = server.get_wsgi()
 Thread(target=app.run, kwargs={"port": 8080}).start()
 sleep(3)

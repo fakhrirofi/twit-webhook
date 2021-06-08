@@ -13,22 +13,19 @@ class TestTwitivity:
 
     @staticmethod
     def create_signature(key, msg, digest=hashlib.sha256):
-        hash_digest = hmac.digest(key=key, msg=msg, digest=digest)
+        hash_digest = hmac.digest(key, msg, digest)
         return base64.b64encode(hash_digest).decode("ascii")
 
     @classmethod
     def start_webhook(cls):
-        def callable(data):
+        def process_data(data):
             assert isinstance(data, dict)
 
         cls.webhook = {
-            "testing": {
-                "consumer_secret": "CONSUMER_SECRET",
-                "subscriptions": [{"user_id": "123456789", "callable": callable}],
-            }
+            "testing": "CONSUMER_SECRET",
         }
 
-        server = Event("callback", cls.webhook)
+        server = Event("callback", cls.webhook, process_data)
         app = server.get_wsgi()
         t = Thread(target=app.run, kwargs={"port": 4040})
         t.daemon = True
@@ -43,7 +40,7 @@ class TestTwitivity:
         )
         assert r.status_code == 200
         signature = self.create_signature(
-            self.webhook["testing"]["consumer_secret"].encode("utf-8"),
+            self.webhook["testing"].encode("utf-8"),
             crc_token.encode("utf-8"),
         )
         assert r.json()["response_token"] == f"sha256={signature}"
@@ -55,14 +52,14 @@ class TestTwitivity:
         )
         assert r.status_code == 200
         signature = self.create_signature(
-            self.webhook["testing"]["consumer_secret"].encode("utf-8"),
+            self.webhook["testing"].encode("utf-8"),
             crc_token.encode("utf-8"),
         )
         assert r.json()["response_token"] == f"sha256={signature}"
 
     def test_receive_post(self):
         signature = self.create_signature(
-            self.webhook["testing"]["consumer_secret"].encode("utf-8"),
+            self.webhook["testing"].encode("utf-8"),
             '{"for_user_id": "123456789", "test": "test"}'.encode("utf-8"),
         )
         r = requests.post(
@@ -87,18 +84,6 @@ class TestTwitivity:
             headers={"X-Twitter-Webhooks-Signature": f"sha256=h7dghe7w9dgfi73ga7"},
         )
         assert r.status_code == 403
-
-        # wrong user id
-        signature = self.create_signature(
-            self.webhook["testing"]["consumer_secret"].encode("utf-8"),
-            '{"for_user_id": "123456789123456789", "test": "test"}'.encode("utf-8"),
-        )
-        r = requests.post(
-            "http://127.0.0.1:4040/callback/testing",
-            json={"for_user_id": "123456789123456789", "test": "test"},
-            headers={"X-Twitter-Webhooks-Signature": f"sha256={signature}"},
-        )
-        assert r.status_code == 404
 
     def test_wrong_webhook_route(self):
         r = requests.post("http://127.0.0.1:4040/callback/haha")
